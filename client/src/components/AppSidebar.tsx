@@ -5,6 +5,8 @@ import {
   Heart,
   PlusCircle,
   Music,
+  Users,
+  Radio,
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,11 +24,17 @@ import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
 import { CreatePlaylistDialog } from "@/components/CreatePlaylistDialog";
 import { UploadMusicDialog } from "@/components/UploadMusicDialog";
+import { CollaborativePlaylistDialog } from "@/components/CollaborativePlaylistDialog";
 
 const mainItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Search", url: "/search", icon: Search },
   { title: "Your Library", url: "/library", icon: Library },
+];
+
+const socialItems = [
+  { title: "Activity Feed", url: "/feed", icon: Radio },
+  { title: "Friends", url: "/friends", icon: Users },
   { title: "Liked Songs", url: "/liked", icon: Heart },
 ];
 
@@ -76,10 +84,33 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
+          <SidebarGroupLabel>Social</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {socialItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === item.url}
+                    data-testid={`link-${item.title.toLowerCase().replace(" ", "-")}`}
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="h-5 w-5" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
           <SidebarGroupLabel>Playlists</SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="mb-2">
+            <div className="mb-2 space-y-2">
               <CreatePlaylistDialog />
+              <CollaborativePlaylistDialog />
             </div>
             <SidebarMenu>
               {playlists.map((playlist) => (

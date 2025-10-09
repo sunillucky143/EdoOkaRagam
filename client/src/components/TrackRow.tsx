@@ -1,4 +1,4 @@
-import { Play, Heart, MoreHorizontal } from "lucide-react";
+import { Play, Heart, MoreHorizontal, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ShareMusicDialog } from "@/components/ShareMusicDialog";
 
 interface TrackRowProps {
   id: string;
@@ -60,12 +61,7 @@ export function TrackRow({
     });
   };
 
-  const handleShare = () => {
-    toast({
-      title: "Share track",
-      description: `Share "${title}" with your friends`,
-    });
-  };
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   const isCurrentTrack = currentTrack?.id === id;
 
@@ -155,9 +151,18 @@ export function TrackRow({
             <DropdownMenuItem onClick={handleAddToPlaylist} data-testid="menu-add-to-playlist">
               Add to Playlist
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleShare} data-testid="menu-share-track">
-              Share Track
-            </DropdownMenuItem>
+            <ShareMusicDialog
+              track={{ id, title, artist, album, albumCover: albumCover || "" }}
+              trigger={
+                <DropdownMenuItem 
+                  onSelect={(e) => { e.preventDefault(); setShareDialogOpen(true); }} 
+                  data-testid="menu-share-track"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Track
+                </DropdownMenuItem>
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

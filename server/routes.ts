@@ -2,7 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import type { ListeningRoom, RoomParticipant } from "@shared/schema";
+import type { ListeningRoom, RoomParticipant, User } from "@shared/schema";
+import { insertFriendshipSchema, insertMusicActivitySchema, insertActivityReactionSchema, insertActivityCommentSchema } from "@shared/schema";
+import { generateMusicRecommendations, analyzeMusicMood, type ConversationContext } from "./ai";
 
 interface RoomConnection {
   ws: WebSocket;
@@ -85,6 +87,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to update permissions" });
+    }
+  });
+
+  app.get("/api/users/search", async (req, res) => {
+    try {
+      const { q, excludeUserId } = req.query;
+      const users = await storage.searchUsers(q as string, excludeUserId as string);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to search users" });
+    }
+  });
+
+  app.post("/api/friendships", async (req, res) => {
+    try {
+      const data = insertFriendshipSchema.parse(req.body);
+      const existing = await storage.getFriendship(data.userId, data.friendId);
+      if (existing) {
+        return res.status(400).json({ error: "Friend request already exists" });
+      }
+      const friendship = await storage.createFriendship(data);
+      res.json(friendship);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send friend request" });
+    }
+  });
+
+  app.get("/api/friendships/:userId", async (req, res) => {
+    try {
+      const friendships = await storage.getUserFriendships(req.params.userId);
+      const enrichedFriendships = await Promise.all(
+        friendships.map(async (f) => {
+          const friendUserId = f.userId === req.params.userId ? f.friendId : f.userId;
+          const friend = await storage.getUser(friendUserId);
+          return {
+            ...f,
+            friend: friend ? { id: friend.id, username: friend.username } : null,
+          };
+        })
+      );
+      res.json(enrichedFriendships);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch friendships" });
+    }
+  });
+
+  app.patch("/api/friendships/:id/accept", async (req, res) => {
+    try {
+      await storage.updateFriendshipStatus(req.params.id, "accepted");
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to accept friend request" });
+    }
+  });
+
+  app.delete("/api/friendships/:id", async (req, res) => {
+    try {
+      await storage.deleteFriendship(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete friendship" });
+    }
+  });
+
+  app.post("/api/activities", async (req, res) => {
+    try {
+      const data = insertMusicActivitySchema.parse(req.body);
+      const activity = await storage.createMusicActivity(data);
+      res.json(activity);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create activity" });
+    }
+  });
+
+  app.get("/api/activities/user/:userId", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const activities = await storage.getUserActivities(req.params.userId, limit);
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch activities" });
+    }
+  });
+
+  app.get("/api/activities/friends/:userId", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const activities = await storage.getFriendsActivities(req.params.userId, limit);
+      const enrichedActivities = await Promise.all(
+        activities.map(async (a) => {
+          const user = await storage.getUser(a.userId);
+          const reactions = await storage.getActivityReactions(a.id);
+          const comments = await storage.getActivityComments(a.id);
+          return {
+            ...a,
+            user: user ? { id: user.id, username: user.username } : null,
+            reactions,
+            comments,
+          };
+        })
+      );
+      res.json(enrichedActivities);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch friends activities" });
+    }
+  });
+
+  app.post("/api/activities/:id/reactions", async (req, res) => {
+    try {
+      const data = insertActivityReactionSchema.parse(req.body);
+      const reaction = await storage.createActivityReaction(data);
+      res.json(reaction);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add reaction" });
+    }
+  });
+
+  app.delete("/api/activities/:activityId/reactions/:reactionId", async (req, res) => {
+    try {
+      await storage.deleteActivityReaction(req.params.reactionId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove reaction" });
+    }
+  });
+
+  app.post("/api/activities/:id/comments", async (req, res) => {
+    try {
+      const data = insertActivityCommentSchema.parse(req.body);
+      const comment = await storage.createActivityComment(data);
+      res.json(comment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add comment" });
+    }
+  });
+
+  app.delete("/api/activities/:activityId/comments/:commentId", async (req, res) => {
+    try {
+      await storage.deleteActivityComment(req.params.commentId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete comment" });
+    }
+  });
+
+  app.post("/api/ai/recommendations", async (req, res) => {
+    try {
+      const { messages, recentTracks, count } = req.body;
+      const context: ConversationContext = { messages, recentTracks };
+      const recommendations = await generateMusicRecommendations(context, count || 5);
+      res.json({ recommendations });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate recommendations" });
+    }
+  });
+
+  app.post("/api/ai/analyze-mood", async (req, res) => {
+    try {
+      const { tracks } = req.body;
+      const mood = await analyzeMusicMood(tracks);
+      res.json(mood);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to analyze mood" });
     }
   });
 

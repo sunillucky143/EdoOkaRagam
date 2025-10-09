@@ -14,6 +14,8 @@ import SearchPage from "@/pages/SearchPage";
 import Library from "@/pages/Library";
 import Playlist from "@/pages/Playlist";
 import ListeningRoom from "@/pages/ListeningRoom";
+import Friends from "@/pages/Friends";
+import Feed from "@/pages/Feed";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +27,8 @@ function Router() {
       <Route path="/playlist/:id" component={Playlist} />
       <Route path="/liked" component={Playlist} />
       <Route path="/room/:roomId" component={ListeningRoom} />
+      <Route path="/friends" component={Friends} />
+      <Route path="/feed" component={Feed} />
       <Route component={NotFound} />
     </Switch>
   );
