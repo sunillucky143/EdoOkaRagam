@@ -24,6 +24,7 @@ Preferred communication style: Simple, everyday language.
 - shadcn/ui component library built on top of Radix (New York style variant)
 - Tailwind CSS for utility-first styling with custom design tokens
 - CSS custom properties for theming (light/dark mode support)
+- Fully responsive design with mobile-first approach using Tailwind breakpoints (sm, md, lg)
 
 **Design System**
 - Custom color palette with HSL values defined in CSS variables
@@ -31,6 +32,16 @@ Preferred communication style: Simple, everyday language.
 - Light mode: near-white backgrounds (220 15% 98%) with adjusted accent colors
 - Typography: Inter for UI/body text, Plus Jakarta Sans for display/headings
 - Consistent spacing system using Tailwind's 4/8/16/24/32px scale
+
+**Mobile Responsiveness**
+- Separate mobile and desktop layouts for audio player component
+- Mobile audio player: compact design with simplified controls, progress bar on top
+- Desktop audio player: full control suite with volume controls and extended features
+- All pages use responsive padding (p-4 md:p-6 md:p-8) and typography (text-2xl md:text-4xl)
+- Grids adapt across breakpoints (grid-cols-2 md:grid-cols-3 lg:grid-cols-5)
+- Hero sections and headers stack vertically on mobile (flex-col md:flex-row)
+- Touch-friendly button sizes and spacing maintained across all devices
+- Sidebar collapses on mobile via SidebarProvider overlay behavior
 
 **State Management**
 - TanStack Query (React Query) for server state management and data fetching
