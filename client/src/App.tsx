@@ -13,6 +13,7 @@ import Home from "@/pages/Home";
 import SearchPage from "@/pages/SearchPage";
 import Library from "@/pages/Library";
 import Playlist from "@/pages/Playlist";
+import ListeningRoom from "@/pages/ListeningRoom";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/library" component={Library} />
       <Route path="/playlist/:id" component={Playlist} />
       <Route path="/liked" component={Playlist} />
+      <Route path="/room/:roomId" component={ListeningRoom} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -1,5 +1,7 @@
 import { AlbumCard } from "@/components/AlbumCard";
 import { TrackRow } from "@/components/TrackRow";
+import { CreateRoomDialog } from "@/components/CreateRoomDialog";
+import { JoinRoomDialog } from "@/components/JoinRoomDialog";
 import { mockAlbums, mockTracks } from "@/lib/mockData";
 import heroBg from "@assets/stock_images/music_concert_crowd__56613b88.jpg";
 
@@ -15,13 +17,21 @@ export default function Home() {
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-background" />
-        <div className="relative z-10">
-          <h1 className="font-display text-6xl font-bold mb-4 text-white">
-            Welcome Back
-          </h1>
-          <p className="text-xl text-white/90">
-            Your personal music universe awaits
-          </p>
+        <div className="relative z-10 w-full">
+          <div className="flex items-end justify-between">
+            <div>
+              <h1 className="font-display text-6xl font-bold mb-4 text-white">
+                Welcome Back
+              </h1>
+              <p className="text-xl text-white/90">
+                Your personal music universe awaits
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <CreateRoomDialog />
+              <JoinRoomDialog />
+            </div>
+          </div>
         </div>
       </div>
 
