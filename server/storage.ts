@@ -15,6 +15,14 @@ import {
   type InsertActivityReaction,
   type ActivityComment,
   type InsertActivityComment,
+  type Vibe,
+  type InsertVibe,
+  type VibeReaction,
+  type InsertVibeReaction,
+  type VibeComment,
+  type InsertVibeComment,
+  type VibeShareRequest,
+  type InsertVibeShareRequest,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -59,6 +67,23 @@ export interface IStorage {
   createActivityComment(comment: InsertActivityComment): Promise<ActivityComment>;
   getActivityComments(activityId: string): Promise<ActivityComment[]>;
   deleteActivityComment(id: string): Promise<void>;
+
+  createVibe(vibe: InsertVibe): Promise<Vibe>;
+  getVibe(id: string): Promise<Vibe | undefined>;
+  getFriendsVibes(userId: string): Promise<Vibe[]>;
+  deleteExpiredVibes(): Promise<void>;
+
+  createVibeReaction(reaction: InsertVibeReaction): Promise<VibeReaction>;
+  getVibeReactions(vibeId: string): Promise<VibeReaction[]>;
+  deleteVibeReaction(id: string): Promise<void>;
+
+  createVibeComment(comment: InsertVibeComment): Promise<VibeComment>;
+  getVibeComments(vibeId: string): Promise<VibeComment[]>;
+  deleteVibeComment(id: string): Promise<void>;
+
+  createVibeShareRequest(request: InsertVibeShareRequest): Promise<VibeShareRequest>;
+  getVibeShareRequests(vibeId: string): Promise<VibeShareRequest[]>;
+  updateVibeShareRequestStatus(id: string, status: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -70,6 +95,10 @@ export class MemStorage implements IStorage {
   private musicActivities: Map<string, MusicActivity>;
   private activityReactions: Map<string, ActivityReaction>;
   private activityComments: Map<string, ActivityComment>;
+  private vibes: Map<string, Vibe>;
+  private vibeReactions: Map<string, VibeReaction>;
+  private vibeComments: Map<string, VibeComment>;
+  private vibeShareRequests: Map<string, VibeShareRequest>;
 
   constructor() {
     this.users = new Map();
@@ -80,6 +109,10 @@ export class MemStorage implements IStorage {
     this.musicActivities = new Map();
     this.activityReactions = new Map();
     this.activityComments = new Map();
+    this.vibes = new Map();
+    this.vibeReactions = new Map();
+    this.vibeComments = new Map();
+    this.vibeShareRequests = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -352,6 +385,128 @@ export class MemStorage implements IStorage {
 
   async deleteActivityComment(id: string): Promise<void> {
     this.activityComments.delete(id);
+  }
+
+  async createVibe(insertVibe: InsertVibe): Promise<Vibe> {
+    const id = randomUUID();
+    const vibe: Vibe = {
+      id,
+      userId: insertVibe.userId,
+      trackId: insertVibe.trackId,
+      trackTitle: insertVibe.trackTitle,
+      trackArtist: insertVibe.trackArtist,
+      trackAlbumCover: insertVibe.trackAlbumCover,
+      startTime: insertVibe.startTime ?? 0,
+      message: insertVibe.message ?? null,
+      createdAt: new Date(),
+      expiresAt: insertVibe.expiresAt,
+    };
+    this.vibes.set(id, vibe);
+    return vibe;
+  }
+
+  async getVibe(id: string): Promise<Vibe | undefined> {
+    return this.vibes.get(id);
+  }
+
+  async getFriendsVibes(userId: string): Promise<Vibe[]> {
+    await this.deleteExpiredVibes();
+    
+    const friendships = await this.getUserFriendships(userId);
+    const friendIds = friendships
+      .filter((f) => f.status === "accepted")
+      .map((f) => f.userId === userId ? f.friendId : f.userId);
+
+    const now = new Date();
+    return Array.from(this.vibes.values())
+      .filter((v) => 
+        (friendIds.includes(v.userId) || v.userId === userId) &&
+        v.expiresAt > now
+      )
+      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+  }
+
+  async deleteExpiredVibes(): Promise<void> {
+    const now = new Date();
+    const expiredIds = Array.from(this.vibes.entries())
+      .filter(([_, vibe]) => vibe.expiresAt <= now)
+      .map(([id]) => id);
+    
+    expiredIds.forEach(id => this.vibes.delete(id));
+  }
+
+  async createVibeReaction(insertReaction: InsertVibeReaction): Promise<VibeReaction> {
+    const id = randomUUID();
+    const reaction: VibeReaction = {
+      id,
+      vibeId: insertReaction.vibeId,
+      userId: insertReaction.userId,
+      reactionType: insertReaction.reactionType,
+      createdAt: new Date(),
+    };
+    this.vibeReactions.set(id, reaction);
+    return reaction;
+  }
+
+  async getVibeReactions(vibeId: string): Promise<VibeReaction[]> {
+    return Array.from(this.vibeReactions.values())
+      .filter((r) => r.vibeId === vibeId);
+  }
+
+  async deleteVibeReaction(id: string): Promise<void> {
+    this.vibeReactions.delete(id);
+  }
+
+  async createVibeComment(insertComment: InsertVibeComment): Promise<VibeComment> {
+    const id = randomUUID();
+    const comment: VibeComment = {
+      id,
+      vibeId: insertComment.vibeId,
+      userId: insertComment.userId,
+      username: insertComment.username,
+      comment: insertComment.comment,
+      createdAt: new Date(),
+    };
+    this.vibeComments.set(id, comment);
+    return comment;
+  }
+
+  async getVibeComments(vibeId: string): Promise<VibeComment[]> {
+    return Array.from(this.vibeComments.values())
+      .filter((c) => c.vibeId === vibeId)
+      .sort((a, b) => (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0));
+  }
+
+  async deleteVibeComment(id: string): Promise<void> {
+    this.vibeComments.delete(id);
+  }
+
+  async createVibeShareRequest(insertRequest: InsertVibeShareRequest): Promise<VibeShareRequest> {
+    const id = randomUUID();
+    const request: VibeShareRequest = {
+      id,
+      vibeId: insertRequest.vibeId,
+      requesterId: insertRequest.requesterId,
+      requesterUsername: insertRequest.requesterUsername,
+      status: insertRequest.status ?? "pending",
+      createdAt: new Date(),
+    };
+    this.vibeShareRequests.set(id, request);
+    return request;
+  }
+
+  async getVibeShareRequests(vibeId: string): Promise<VibeShareRequest[]> {
+    return Array.from(this.vibeShareRequests.values())
+      .filter((r) => r.vibeId === vibeId)
+      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+  }
+
+  async updateVibeShareRequestStatus(id: string, status: string): Promise<void> {
+    const request = this.vibeShareRequests.get(id);
+    if (request) {
+      request.status = status;
+      this.vibeShareRequests.set(id, request);
+    }
   }
 }
 

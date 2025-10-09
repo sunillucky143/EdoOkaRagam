@@ -7,6 +7,7 @@ interface Track {
   album: string;
   duration: string;
   albumCover: string;
+  startTime?: number;
 }
 
 interface AudioPlayerContextType {
@@ -18,7 +19,7 @@ interface AudioPlayerContextType {
   shuffle: boolean;
   repeat: boolean;
   duration: number;
-  playTrack: (track: Track) => void;
+  playTrack: (track: Track, startTime?: number) => void;
   playQueue: (tracks: Track[], startIndex?: number) => void;
   togglePlayPause: () => void;
   nextTrack: () => void;
@@ -113,11 +114,27 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, [repeat, currentIndex, queue.length]);
 
-  const playTrack = useCallback((track: Track) => {
-    setCurrentTrack(track);
-    setQueue([track]);
+  const playTrack = useCallback((track: Track, startTime?: number) => {
+    const trackWithStartTime = startTime !== undefined ? { ...track, startTime } : track;
+    setCurrentTrack(trackWithStartTime);
+    setQueue([trackWithStartTime]);
     setCurrentIndex(0);
     setProgress(0);
+    
+    if (audioRef.current && startTime !== undefined) {
+      const seekToStartTime = () => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = startTime;
+        }
+      };
+      
+      if (audioRef.current.readyState >= 1) {
+        seekToStartTime();
+      } else {
+        audioRef.current.addEventListener('loadedmetadata', seekToStartTime, { once: true });
+      }
+    }
+    
     setIsPlaying(true);
   }, []);
 

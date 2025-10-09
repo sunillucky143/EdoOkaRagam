@@ -10,6 +10,22 @@ The application features a Spotify-inspired interface with dark/light theme supp
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Updates (October 2025)
+
+**Vibes Feature - Ephemeral Music Sharing**
+- WhatsApp-status-style music snippets that expire after 24 hours
+- Users can post 30-second song previews starting at any point in the track
+- Server-side expiration enforcement prevents client-side manipulation
+- Audio player enhanced with start-time seeking for accurate snippet playback
+- Social interactions: reactions (heart, fire, thinking), comments, share requests
+- Complete mobile responsiveness with touch-friendly controls
+
+**Technical Improvements**
+- AudioPlayerContext updated to support start-time playback via audioRef.current.currentTime
+- Deferred seeking via loadedmetadata event for reliable audio positioning
+- Server calculates expiresAt (Date.now() + 24h) for all vibes to ensure security
+- Fixed frontend-backend query URL mismatches across all social endpoints
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -65,6 +81,8 @@ Preferred communication style: Simple, everyday language.
 - Room management: POST/GET `/api/rooms`, GET `/api/rooms/:roomId`
 - Participant management: POST `/api/rooms/:roomId/join`, room participant operations
 - Queue management endpoints for collaborative playlists
+- Vibes endpoints: POST `/api/vibes`, GET `/api/vibes/friends/:userId`
+- Social features: reactions, comments, share requests for vibes
 
 **WebSocket Server**
 - ws library for WebSocket implementation
@@ -90,6 +108,10 @@ Preferred communication style: Simple, everyday language.
 - **listening_rooms**: Collaborative listening sessions with playback state (id, name, hostId, currentTrackId, currentPosition, isPlaying, createdAt)
 - **room_participants**: Room membership with permissions (id, roomId, userId, username, canControl, joinedAt)
 - **room_queue**: Shared playlist queue for rooms (referenced in storage interface)
+- **vibes**: Ephemeral 30-second song snippets (id, userId, trackId, trackTitle, trackArtist, trackAlbumCover, startTime, message, expiresAt, createdAt)
+- **vibe_reactions**: Reactions to vibes (id, vibeId, userId, reactionType, createdAt)
+- **vibe_comments**: Comments on vibes (id, vibeId, userId, username, content, createdAt)
+- **vibe_share_requests**: Requests to share full tracks (id, vibeId, fromUserId, toUserId, createdAt)
 
 **Storage Layer**
 - Abstracted storage interface (`IStorage`) for database operations

@@ -7,6 +7,7 @@ import {
   Music,
   Users,
   Radio,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -33,6 +34,7 @@ const mainItems = [
 ];
 
 const socialItems = [
+  { title: "Vibes", url: "/vibes", icon: Zap },
   { title: "Activity Feed", url: "/feed", icon: Radio },
   { title: "Friends", url: "/friends", icon: Users },
   { title: "Liked Songs", url: "/liked", icon: Heart },

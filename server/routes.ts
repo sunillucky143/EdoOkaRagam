@@ -3,7 +3,16 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import type { ListeningRoom, RoomParticipant, User } from "@shared/schema";
-import { insertFriendshipSchema, insertMusicActivitySchema, insertActivityReactionSchema, insertActivityCommentSchema } from "@shared/schema";
+import { 
+  insertFriendshipSchema, 
+  insertMusicActivitySchema, 
+  insertActivityReactionSchema, 
+  insertActivityCommentSchema,
+  insertVibeSchema,
+  insertVibeReactionSchema,
+  insertVibeCommentSchema,
+  insertVibeShareRequestSchema,
+} from "@shared/schema";
 import { generateMusicRecommendations, analyzeMusicMood, type ConversationContext } from "./ai";
 
 interface RoomConnection {
@@ -250,6 +259,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(mood);
     } catch (error) {
       res.status(500).json({ error: "Failed to analyze mood" });
+    }
+  });
+
+  app.post("/api/vibes", async (req, res) => {
+    try {
+      const { userId, trackId, trackTitle, trackArtist, trackAlbumCover, startTime, message } = req.body;
+      
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24);
+
+      const vibe = await storage.createVibe({
+        userId,
+        trackId,
+        trackTitle,
+        trackArtist,
+        trackAlbumCover,
+        startTime,
+        message,
+        expiresAt,
+      });
+      res.json(vibe);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create vibe" });
+    }
+  });
+
+  app.get("/api/vibes/friends/:userId", async (req, res) => {
+    try {
+      const vibes = await storage.getFriendsVibes(req.params.userId);
+      const enrichedVibes = await Promise.all(
+        vibes.map(async (v) => {
+          const user = await storage.getUser(v.userId);
+          const reactions = await storage.getVibeReactions(v.id);
+          const comments = await storage.getVibeComments(v.id);
+          const shareRequests = await storage.getVibeShareRequests(v.id);
+          return {
+            ...v,
+            user: user ? { id: user.id, username: user.username } : null,
+            reactions,
+            comments,
+            shareRequests,
+          };
+        })
+      );
+      res.json(enrichedVibes);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch vibes" });
+    }
+  });
+
+  app.post("/api/vibes/:id/reactions", async (req, res) => {
+    try {
+      const data = insertVibeReactionSchema.parse(req.body);
+      const reaction = await storage.createVibeReaction(data);
+      res.json(reaction);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add reaction" });
+    }
+  });
+
+  app.post("/api/vibes/:id/comments", async (req, res) => {
+    try {
+      const data = insertVibeCommentSchema.parse(req.body);
+      const comment = await storage.createVibeComment(data);
+      res.json(comment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add comment" });
+    }
+  });
+
+  app.post("/api/vibes/:id/share-requests", async (req, res) => {
+    try {
+      const data = insertVibeShareRequestSchema.parse(req.body);
+      const request = await storage.createVibeShareRequest(data);
+      res.json(request);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create share request" });
+    }
+  });
+
+  app.patch("/api/vibes/share-requests/:id", async (req, res) => {
+    try {
+      const { status } = req.body;
+      await storage.updateVibeShareRequestStatus(req.params.id, status);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update share request" });
     }
   });
 

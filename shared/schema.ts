@@ -142,3 +142,74 @@ export const insertActivityCommentSchema = createInsertSchema(activityComments).
 
 export type InsertActivityComment = z.infer<typeof insertActivityCommentSchema>;
 export type ActivityComment = typeof activityComments.$inferSelect;
+
+export const vibes = pgTable("vibes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  trackId: text("track_id").notNull(),
+  trackTitle: text("track_title").notNull(),
+  trackArtist: text("track_artist").notNull(),
+  trackAlbumCover: text("track_album_cover").notNull(),
+  startTime: integer("start_time").notNull().default(0),
+  message: text("message"),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const insertVibeSchema = createInsertSchema(vibes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertVibe = z.infer<typeof insertVibeSchema>;
+export type Vibe = typeof vibes.$inferSelect;
+
+export const vibeReactions = pgTable("vibe_reactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  vibeId: varchar("vibe_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  reactionType: text("reaction_type").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVibeReactionSchema = createInsertSchema(vibeReactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertVibeReaction = z.infer<typeof insertVibeReactionSchema>;
+export type VibeReaction = typeof vibeReactions.$inferSelect;
+
+export const vibeComments = pgTable("vibe_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  vibeId: varchar("vibe_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  username: text("username").notNull(),
+  comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVibeCommentSchema = createInsertSchema(vibeComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertVibeComment = z.infer<typeof insertVibeCommentSchema>;
+export type VibeComment = typeof vibeComments.$inferSelect;
+
+export const vibeShareRequests = pgTable("vibe_share_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  vibeId: varchar("vibe_id").notNull(),
+  requesterId: varchar("requester_id").notNull(),
+  requesterUsername: text("requester_username").notNull(),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVibeShareRequestSchema = createInsertSchema(vibeShareRequests).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertVibeShareRequest = z.infer<typeof insertVibeShareRequestSchema>;
+export type VibeShareRequest = typeof vibeShareRequests.$inferSelect;
