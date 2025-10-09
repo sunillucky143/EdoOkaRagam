@@ -8,6 +8,10 @@ import { useState } from "react";
 export default function SearchPage() {
   const [query, setQuery] = useState("");
 
+  const handleGenreClick = (genre: string) => {
+    setQuery(genre);
+  };
+
   return (
     <div className="h-full overflow-auto pb-32">
       <div className="p-8 space-y-6">
@@ -92,7 +96,7 @@ export default function SearchPage() {
                   <div
                     key={genre}
                     className="aspect-square rounded-md bg-gradient-to-br from-primary/80 to-chart-2/80 p-6 flex items-end cursor-pointer hover-elevate transition-all"
-                    onClick={() => console.log(`Browse ${genre}`)}
+                    onClick={() => handleGenreClick(genre)}
                     data-testid={`card-genre-${genre}`}
                   >
                     <h3 className="font-display text-2xl font-bold text-white">

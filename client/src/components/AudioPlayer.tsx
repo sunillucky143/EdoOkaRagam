@@ -10,41 +10,53 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { useState } from "react";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 
 interface AudioPlayerProps {
-  track?: {
-    title: string;
-    artist: string;
-    albumCover: string;
-  };
   onQueueClick?: () => void;
 }
 
-export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(33);
-  const [volume, setVolume] = useState(70);
-  const [shuffle, setShuffle] = useState(false);
-  const [repeat, setRepeat] = useState(false);
+export function AudioPlayer({ onQueueClick }: AudioPlayerProps) {
+  const {
+    currentTrack,
+    isPlaying,
+    progress,
+    volume,
+    shuffle,
+    repeat,
+    togglePlayPause,
+    nextTrack,
+    previousTrack,
+    seekTo,
+    setVolume,
+    toggleShuffle,
+    toggleRepeat,
+  } = useAudioPlayer();
 
-  if (!track) return null;
+  if (!currentTrack) return null;
+
+  const formatTime = (percentage: number) => {
+    const totalSeconds = Math.floor((percentage / 100) * 225);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 h-24 bg-card border-t border-card-border z-50">
       <div className="h-full px-4 flex items-center gap-4">
         <div className="flex items-center gap-3 w-64">
           <img
-            src={track.albumCover}
-            alt={track.title}
+            src={currentTrack.albumCover}
+            alt={currentTrack.title}
             className="h-14 w-14 rounded-md"
           />
           <div className="min-w-0 flex-1">
             <div className="font-medium text-sm truncate" data-testid="text-player-title">
-              {track.title}
+              {currentTrack.title}
             </div>
             <div className="text-xs text-muted-foreground truncate">
-              {track.artist}
+              {currentTrack.artist}
             </div>
           </div>
         </div>
@@ -55,10 +67,7 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
               variant="ghost"
               size="icon"
               className={`h-8 w-8 ${shuffle ? "text-chart-2" : ""}`}
-              onClick={() => {
-                setShuffle(!shuffle);
-                console.log(`Shuffle ${!shuffle ? "on" : "off"}`);
-              }}
+              onClick={toggleShuffle}
               data-testid="button-shuffle"
             >
               <Shuffle className="h-4 w-4" />
@@ -68,7 +77,7 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => console.log("Previous track")}
+              onClick={previousTrack}
               data-testid="button-previous"
             >
               <SkipBack className="h-5 w-5 fill-current" />
@@ -77,10 +86,7 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
             <Button
               size="icon"
               className="h-10 w-10 rounded-full bg-primary hover:bg-primary"
-              onClick={() => {
-                setIsPlaying(!isPlaying);
-                console.log(isPlaying ? "Paused" : "Playing");
-              }}
+              onClick={togglePlayPause}
               data-testid="button-play-pause"
             >
               {isPlaying ? (
@@ -94,7 +100,7 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => console.log("Next track")}
+              onClick={nextTrack}
               data-testid="button-next"
             >
               <SkipForward className="h-5 w-5 fill-current" />
@@ -104,10 +110,7 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
               variant="ghost"
               size="icon"
               className={`h-8 w-8 ${repeat ? "text-chart-2" : ""}`}
-              onClick={() => {
-                setRepeat(!repeat);
-                console.log(`Repeat ${!repeat ? "on" : "off"}`);
-              }}
+              onClick={toggleRepeat}
               data-testid="button-repeat"
             >
               <Repeat className="h-4 w-4" />
@@ -116,18 +119,17 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
 
           <div className="w-full flex items-center gap-2">
             <span className="text-xs text-muted-foreground w-10 text-right">
-              1:24
+              {formatTime(progress)}
             </span>
             <Slider
               value={[progress]}
-              onValueChange={([value]) => {
-                setProgress(value);
-                console.log(`Seek to ${value}%`);
-              }}
+              onValueChange={([value]) => seekTo(value)}
               className="flex-1"
               data-testid="slider-progress"
             />
-            <span className="text-xs text-muted-foreground w-10">3:45</span>
+            <span className="text-xs text-muted-foreground w-10">
+              {currentTrack.duration}
+            </span>
           </div>
         </div>
 
@@ -136,10 +138,7 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => {
-              onQueueClick?.();
-              console.log("Queue toggled");
-            }}
+            onClick={onQueueClick}
             data-testid="button-queue"
           >
             <ListMusic className="h-5 w-5" />
@@ -147,10 +146,7 @@ export function AudioPlayer({ track, onQueueClick }: AudioPlayerProps) {
           <Volume2 className="h-5 w-5 text-muted-foreground" />
           <Slider
             value={[volume]}
-            onValueChange={([value]) => {
-              setVolume(value);
-              console.log(`Volume: ${value}%`);
-            }}
+            onValueChange={([value]) => setVolume(value)}
             className="w-24"
             data-testid="slider-volume"
           />

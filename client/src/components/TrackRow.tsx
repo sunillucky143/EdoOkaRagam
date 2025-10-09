@@ -1,6 +1,14 @@
 import { Play, Heart, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TrackRowProps {
   id: string;
@@ -15,6 +23,7 @@ interface TrackRowProps {
 }
 
 export function TrackRow({
+  id,
   number,
   title,
   artist,
@@ -25,6 +34,40 @@ export function TrackRow({
   onPlay,
 }: TrackRowProps) {
   const [liked, setLiked] = useState(false);
+  const { playTrack, currentTrack, addToQueue } = useAudioPlayer();
+  const { toast } = useToast();
+
+  const handlePlay = () => {
+    if (onPlay) {
+      onPlay();
+    } else {
+      playTrack({ id, title, artist, album, duration, albumCover: albumCover || "" });
+    }
+  };
+
+  const handleAddToQueue = () => {
+    addToQueue({ id, title, artist, album, duration, albumCover: albumCover || "" });
+    toast({
+      title: "Added to queue",
+      description: `"${title}" has been added to your queue`,
+    });
+  };
+
+  const handleAddToPlaylist = () => {
+    toast({
+      title: "Add to playlist",
+      description: "Select a playlist to add this track to",
+    });
+  };
+
+  const handleShare = () => {
+    toast({
+      title: "Share track",
+      description: `Share "${title}" with your friends`,
+    });
+  };
+
+  const isCurrentTrack = currentTrack?.id === id;
 
   return (
     <div
@@ -32,7 +75,7 @@ export function TrackRow({
       data-testid={`row-track-${title}`}
     >
       <div className="w-8 flex items-center justify-center">
-        {isPlaying ? (
+        {isPlaying || isCurrentTrack ? (
           <div className="flex gap-0.5">
             <div className="w-0.5 h-3 bg-chart-2 animate-pulse" />
             <div className="w-0.5 h-3 bg-chart-2 animate-pulse delay-75" />
@@ -47,10 +90,7 @@ export function TrackRow({
               variant="ghost"
               size="icon"
               className="h-8 w-8 hidden group-hover:flex"
-              onClick={() => {
-                onPlay?.();
-                console.log(`Playing track: ${title}`);
-              }}
+              onClick={handlePlay}
               data-testid="button-play-track"
             >
               <Play className="h-4 w-4 fill-current" />
@@ -69,7 +109,7 @@ export function TrackRow({
 
       <div className="min-w-0">
         <div
-          className={`font-medium truncate ${isPlaying ? "text-chart-2" : "text-foreground"}`}
+          className={`font-medium truncate ${isPlaying || isCurrentTrack ? "text-chart-2" : "text-foreground"}`}
           data-testid="text-track-title"
         >
           {title}
@@ -87,10 +127,7 @@ export function TrackRow({
         variant="ghost"
         size="icon"
         className="h-8 w-8 opacity-0 group-hover:opacity-100"
-        onClick={() => {
-          setLiked(!liked);
-          console.log(`${liked ? "Unliked" : "Liked"} track: ${title}`);
-        }}
+        onClick={() => setLiked(!liked)}
         data-testid="button-like-track"
       >
         <Heart
@@ -100,14 +137,29 @@ export function TrackRow({
 
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">{duration}</span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 opacity-0 group-hover:opacity-100"
-          data-testid="button-track-more"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 opacity-0 group-hover:opacity-100"
+              data-testid="button-track-more"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleAddToQueue} data-testid="menu-add-to-queue">
+              Add to Queue
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleAddToPlaylist} data-testid="menu-add-to-playlist">
+              Add to Playlist
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleShare} data-testid="menu-share-track">
+              Share Track
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

@@ -223,6 +223,15 @@ export default function ListeningRoom() {
                     size="icon"
                     className="h-10 w-10"
                     disabled={!canControl}
+                    onClick={() => {
+                      if (canControl) {
+                        sendMessage({ type: "previous" });
+                        const currentIndex = queue.findIndex(t => t.id === currentTrack.id);
+                        if (currentIndex > 0) {
+                          setCurrentTrack(queue[currentIndex - 1]);
+                        }
+                      }
+                    }}
                     data-testid="button-previous"
                   >
                     <SkipBack className="h-5 w-5" />
@@ -247,6 +256,15 @@ export default function ListeningRoom() {
                     size="icon"
                     className="h-10 w-10"
                     disabled={!canControl}
+                    onClick={() => {
+                      if (canControl) {
+                        sendMessage({ type: "next" });
+                        const currentIndex = queue.findIndex(t => t.id === currentTrack.id);
+                        if (currentIndex < queue.length - 1) {
+                          setCurrentTrack(queue[currentIndex + 1]);
+                        }
+                      }
+                    }}
                     data-testid="button-next"
                   >
                     <SkipForward className="h-5 w-5" />

@@ -1,6 +1,8 @@
 import { Play } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import { mockTracks } from "@/lib/mockData";
 
 interface AlbumCardProps {
   id: string;
@@ -11,7 +13,19 @@ interface AlbumCardProps {
   onPlay?: () => void;
 }
 
-export function AlbumCard({ title, artist, cover, tracks, onPlay }: AlbumCardProps) {
+export function AlbumCard({ id, title, artist, cover, tracks, onPlay }: AlbumCardProps) {
+  const { playQueue } = useAudioPlayer();
+
+  const handlePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onPlay) {
+      onPlay();
+    } else {
+      const albumTracks = mockTracks.slice(0, 5);
+      playQueue(albumTracks, 0);
+    }
+  };
+
   return (
     <Card
       className="group overflow-hidden border-0 bg-card hover-elevate transition-all duration-200 cursor-pointer"
@@ -27,11 +41,7 @@ export function AlbumCard({ title, artist, cover, tracks, onPlay }: AlbumCardPro
           <Button
             size="icon"
             className="h-12 w-12 rounded-full bg-primary hover:bg-primary hover:scale-110 transition-transform"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPlay?.();
-              console.log(`Playing album: ${title}`);
-            }}
+            onClick={handlePlay}
             data-testid="button-play-album"
           >
             <Play className="h-6 w-6 fill-current" />

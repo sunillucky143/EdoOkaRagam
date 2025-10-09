@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AudioPlayer } from "@/components/AudioPlayer";
-import { mockTracks } from "@/lib/mockData";
+import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import Home from "@/pages/Home";
 import SearchPage from "@/pages/SearchPage";
 import Library from "@/pages/Library";
@@ -40,22 +40,24 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="dark">
-          <SidebarProvider style={style as React.CSSProperties}>
-            <div className="flex h-screen w-full">
-              <AppSidebar />
-              <div className="flex flex-col flex-1">
-                <header className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-40">
-                  <SidebarTrigger data-testid="button-sidebar-toggle" />
-                  <ThemeToggle />
-                </header>
-                <main className="flex-1 overflow-hidden">
-                  <Router />
-                </main>
+          <AudioPlayerProvider>
+            <SidebarProvider style={style as React.CSSProperties}>
+              <div className="flex h-screen w-full">
+                <AppSidebar />
+                <div className="flex flex-col flex-1">
+                  <header className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-40">
+                    <SidebarTrigger data-testid="button-sidebar-toggle" />
+                    <ThemeToggle />
+                  </header>
+                  <main className="flex-1 overflow-hidden">
+                    <Router />
+                  </main>
+                </div>
               </div>
-            </div>
-            <AudioPlayer track={mockTracks[0]} />
-          </SidebarProvider>
-          <Toaster />
+              <AudioPlayer />
+            </SidebarProvider>
+            <Toaster />
+          </AudioPlayerProvider>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>

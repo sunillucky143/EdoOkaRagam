@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "wouter";
+import { CreatePlaylistDialog } from "@/components/CreatePlaylistDialog";
+import { UploadMusicDialog } from "@/components/UploadMusicDialog";
 
 const mainItems = [
   { title: "Home", url: "/", icon: Home },
@@ -76,15 +78,9 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Playlists</SidebarGroupLabel>
           <SidebarGroupContent>
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground mb-2"
-              onClick={() => console.log("Create playlist")}
-              data-testid="button-create-playlist"
-            >
-              <PlusCircle className="h-5 w-5" />
-              Create Playlist
-            </Button>
+            <div className="mb-2">
+              <CreatePlaylistDialog />
+            </div>
             <SidebarMenu>
               {playlists.map((playlist) => (
                 <SidebarMenuItem key={playlist.id}>
@@ -104,15 +100,18 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => console.log("Upload music")}
-          data-testid="button-upload"
-        >
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Upload Music
-        </Button>
+        <UploadMusicDialog
+          trigger={
+            <Button
+              variant="outline"
+              className="w-full"
+              data-testid="button-upload"
+            >
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Upload Music
+            </Button>
+          }
+        />
       </SidebarFooter>
     </Sidebar>
   );
