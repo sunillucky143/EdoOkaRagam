@@ -167,13 +167,14 @@ export default function ListeningRoom() {
     currentParticipant?.canControl || room.hostId === userId;
 
   return (
-    <div className="h-full overflow-auto pb-8">
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
+    <div className="h-full overflow-auto">
+      <div className="p-4 md:p-6 space-y-4 md:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
             data-testid="button-back"
+            className="w-full sm:w-auto"
           >
             <ChevronLeft className="h-5 w-5 mr-2" />
             Back to Home
@@ -182,6 +183,7 @@ export default function ListeningRoom() {
             variant="outline"
             onClick={copyRoomLink}
             data-testid="button-copy-link"
+            className="w-full sm:w-auto"
           >
             <LinkIcon className="h-4 w-4 mr-2" />
             Copy Invite Link
@@ -189,28 +191,28 @@ export default function ListeningRoom() {
         </div>
 
         <div>
-          <h1 className="font-display text-4xl font-bold mb-2">
+          <h1 className="font-display text-2xl md:text-4xl font-bold mb-2">
             {room.name}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             {isConnected ? "Connected" : "Connecting..."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6">
-              <div className="flex items-center gap-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+            <Card className="p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 mb-4 md:mb-6">
                 <img
                   src={currentTrack.albumCover}
                   alt={currentTrack.title}
-                  className="h-32 w-32 rounded-md"
+                  className="h-24 w-24 md:h-32 md:w-32 rounded-md"
                 />
                 <div className="flex-1">
-                  <h2 className="font-display text-2xl font-semibold mb-1">
+                  <h2 className="font-display text-xl md:text-2xl font-semibold mb-1">
                     {currentTrack.title}
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm md:text-base text-muted-foreground">
                     {currentTrack.artist}
                   </p>
                 </div>

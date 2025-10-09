@@ -87,12 +87,12 @@ export default function Friends() {
   };
 
   return (
-    <div className="h-full overflow-auto p-6 space-y-6 pb-32">
+    <div className="h-full overflow-auto p-4 md:p-6 space-y-4 md:space-y-6">
       <div>
-        <h1 className="font-display text-4xl font-bold mb-2" data-testid="text-page-title">
+        <h1 className="font-display text-2xl md:text-4xl font-bold mb-2" data-testid="text-page-title">
           Friends
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm md:text-base text-muted-foreground">
           Connect with friends and share music together
         </p>
       </div>

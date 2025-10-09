@@ -13,10 +13,10 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="h-full overflow-auto pb-32">
-      <div className="p-8 space-y-6">
-        <div className="flex flex-col items-center gap-6 py-12">
-          <h1 className="font-display text-4xl font-bold">Search</h1>
+    <div className="h-full overflow-auto">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+        <div className="flex flex-col items-center gap-4 md:gap-6 py-6 md:py-12">
+          <h1 className="font-display text-2xl md:text-4xl font-bold">Search</h1>
           <SearchBar onSearch={setQuery} />
         </div>
 

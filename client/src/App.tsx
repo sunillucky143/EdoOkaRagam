@@ -49,11 +49,11 @@ export default function App() {
               <div className="flex h-screen w-full">
                 <AppSidebar />
                 <div className="flex flex-col flex-1">
-                  <header className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-40">
+                  <header className="flex items-center justify-between p-3 md:p-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-40">
                     <SidebarTrigger data-testid="button-sidebar-toggle" />
                     <ThemeToggle />
                   </header>
-                  <main className="flex-1 overflow-hidden">
+                  <main className="flex-1 overflow-hidden pb-24 md:pb-28">
                     <Router />
                   </main>
                 </div>

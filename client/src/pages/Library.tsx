@@ -4,9 +4,9 @@ import { mockAlbums, mockPlaylists, mockArtists } from "@/lib/mockData";
 
 export default function Library() {
   return (
-    <div className="h-full overflow-auto pb-32">
-      <div className="p-8 space-y-6">
-        <h1 className="font-display text-4xl font-bold">Your Library</h1>
+    <div className="h-full overflow-auto">
+      <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+        <h1 className="font-display text-2xl md:text-4xl font-bold">Your Library</h1>
 
         <Tabs defaultValue="playlists" className="w-full">
           <TabsList data-testid="tabs-library">

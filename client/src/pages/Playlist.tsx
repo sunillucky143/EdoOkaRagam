@@ -58,9 +58,9 @@ export default function Playlist() {
   };
 
   return (
-    <div className="h-full overflow-auto pb-32">
+    <div className="h-full overflow-auto">
       <div
-        className="relative h-80 flex items-end p-8 mb-6"
+        className="relative h-64 md:h-80 flex items-end p-4 md:p-8 mb-4 md:mb-6"
         style={{
           backgroundImage: `linear-gradient(to bottom, transparent, var(--background)), url(${playlist.cover})`,
           backgroundSize: "cover",
@@ -68,25 +68,25 @@ export default function Playlist() {
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/10 to-background" />
-        <div className="relative z-10 flex items-end gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-end gap-4 md:gap-6">
           <img
             src={playlist.cover}
             alt={playlist.title}
-            className="h-48 w-48 rounded-md shadow-2xl"
+            className="h-32 w-32 md:h-48 md:w-48 rounded-md shadow-2xl"
           />
           <div>
-            <p className="text-sm font-semibold mb-2">PLAYLIST</p>
-            <h1 className="font-display text-6xl font-bold mb-4" data-testid="text-playlist-title">
+            <p className="text-xs md:text-sm font-semibold mb-1 md:mb-2">PLAYLIST</p>
+            <h1 className="font-display text-3xl md:text-6xl font-bold mb-2 md:mb-4" data-testid="text-playlist-title">
               {playlist.title}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm md:text-base text-muted-foreground">
               {playlist.artist} • {playlist.tracks} songs
             </p>
           </div>
         </div>
       </div>
 
-      <div className="px-8 space-y-6">
+      <div className="px-4 md:px-8 space-y-4 md:space-y-6">
         <div className="flex items-center gap-4">
           <Button
             size="icon"

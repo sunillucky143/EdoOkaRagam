@@ -116,17 +116,17 @@ export default function Feed() {
   };
 
   return (
-    <div className="h-full overflow-auto p-6 space-y-6 pb-32">
-      <div className="flex items-center justify-between">
+    <div className="h-full overflow-auto p-4 md:p-6 space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-4xl font-bold mb-2" data-testid="text-page-title">
+          <h1 className="font-display text-2xl md:text-4xl font-bold mb-2" data-testid="text-page-title">
             Activity Feed
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             See what your friends are listening to
           </p>
         </div>
-        <Button onClick={handleGetAIRecommendations} data-testid="button-ai-recommendations">
+        <Button onClick={handleGetAIRecommendations} data-testid="button-ai-recommendations" className="w-full sm:w-auto">
           <Sparkles className="h-4 w-4 mr-2" />
           AI Recommendations
         </Button>
