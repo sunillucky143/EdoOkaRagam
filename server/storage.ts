@@ -7,6 +7,14 @@ import {
   type InsertRoomParticipant,
   type RoomQueue,
   type InsertRoomQueue,
+  type Friendship,
+  type InsertFriendship,
+  type MusicActivity,
+  type InsertMusicActivity,
+  type ActivityReaction,
+  type InsertActivityReaction,
+  type ActivityComment,
+  type InsertActivityComment,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -14,6 +22,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  searchUsers(query: string, excludeUserId?: string): Promise<User[]>;
   
   createRoom(room: InsertListeningRoom): Promise<ListeningRoom>;
   getRoom(roomId: string): Promise<ListeningRoom | undefined>;
@@ -31,6 +40,25 @@ export interface IStorage {
   addToQueue(roomId: string, track: InsertRoomQueue): Promise<RoomQueue>;
   getRoomQueue(roomId: string): Promise<RoomQueue[]>;
   removeFromQueue(queueId: string): Promise<void>;
+
+  createFriendship(friendship: InsertFriendship): Promise<Friendship>;
+  getFriendship(userId: string, friendId: string): Promise<Friendship | undefined>;
+  getUserFriendships(userId: string): Promise<Friendship[]>;
+  updateFriendshipStatus(id: string, status: string): Promise<void>;
+  deleteFriendship(id: string): Promise<void>;
+
+  createMusicActivity(activity: InsertMusicActivity): Promise<MusicActivity>;
+  getUserActivities(userId: string, limit?: number): Promise<MusicActivity[]>;
+  getFriendsActivities(userId: string, limit?: number): Promise<MusicActivity[]>;
+  getActivity(id: string): Promise<MusicActivity | undefined>;
+
+  createActivityReaction(reaction: InsertActivityReaction): Promise<ActivityReaction>;
+  getActivityReactions(activityId: string): Promise<ActivityReaction[]>;
+  deleteActivityReaction(id: string): Promise<void>;
+
+  createActivityComment(comment: InsertActivityComment): Promise<ActivityComment>;
+  getActivityComments(activityId: string): Promise<ActivityComment[]>;
+  deleteActivityComment(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -38,12 +66,20 @@ export class MemStorage implements IStorage {
   private rooms: Map<string, ListeningRoom>;
   private participants: Map<string, RoomParticipant>;
   private queue: Map<string, RoomQueue>;
+  private friendships: Map<string, Friendship>;
+  private musicActivities: Map<string, MusicActivity>;
+  private activityReactions: Map<string, ActivityReaction>;
+  private activityComments: Map<string, ActivityComment>;
 
   constructor() {
     this.users = new Map();
     this.rooms = new Map();
     this.participants = new Map();
     this.queue = new Map();
+    this.friendships = new Map();
+    this.musicActivities = new Map();
+    this.activityReactions = new Map();
+    this.activityComments = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -61,6 +97,16 @@ export class MemStorage implements IStorage {
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
+  }
+
+  async searchUsers(query: string, excludeUserId?: string): Promise<User[]> {
+    const lowerQuery = query.toLowerCase();
+    return Array.from(this.users.values())
+      .filter(user => 
+        user.id !== excludeUserId && 
+        user.username.toLowerCase().includes(lowerQuery)
+      )
+      .slice(0, 10);
   }
 
   async createRoom(insertRoom: InsertListeningRoom): Promise<ListeningRoom> {
@@ -178,6 +224,134 @@ export class MemStorage implements IStorage {
 
   async removeFromQueue(queueId: string): Promise<void> {
     this.queue.delete(queueId);
+  }
+
+  async createFriendship(insertFriendship: InsertFriendship): Promise<Friendship> {
+    const id = randomUUID();
+    const friendship: Friendship = {
+      id,
+      userId: insertFriendship.userId,
+      friendId: insertFriendship.friendId,
+      status: insertFriendship.status ?? "pending",
+      createdAt: new Date(),
+    };
+    this.friendships.set(id, friendship);
+    return friendship;
+  }
+
+  async getFriendship(userId: string, friendId: string): Promise<Friendship | undefined> {
+    return Array.from(this.friendships.values()).find(
+      (f) => (f.userId === userId && f.friendId === friendId) || (f.userId === friendId && f.friendId === userId),
+    );
+  }
+
+  async getUserFriendships(userId: string): Promise<Friendship[]> {
+    return Array.from(this.friendships.values()).filter(
+      (f) => f.userId === userId || f.friendId === userId,
+    );
+  }
+
+  async updateFriendshipStatus(id: string, status: string): Promise<void> {
+    const friendship = this.friendships.get(id);
+    if (friendship) {
+      friendship.status = status;
+      this.friendships.set(id, friendship);
+    }
+  }
+
+  async deleteFriendship(id: string): Promise<void> {
+    this.friendships.delete(id);
+  }
+
+  async createMusicActivity(insertActivity: InsertMusicActivity): Promise<MusicActivity> {
+    const id = randomUUID();
+    const activity: MusicActivity = {
+      id,
+      userId: insertActivity.userId,
+      activityType: insertActivity.activityType,
+      trackId: insertActivity.trackId ?? null,
+      trackTitle: insertActivity.trackTitle ?? null,
+      trackArtist: insertActivity.trackArtist ?? null,
+      trackAlbum: insertActivity.trackAlbum ?? null,
+      trackAlbumCover: insertActivity.trackAlbumCover ?? null,
+      message: insertActivity.message ?? null,
+      sharedWith: insertActivity.sharedWith ?? null,
+      createdAt: new Date(),
+    };
+    this.musicActivities.set(id, activity);
+    return activity;
+  }
+
+  async getUserActivities(userId: string, limit: number = 20): Promise<MusicActivity[]> {
+    return Array.from(this.musicActivities.values())
+      .filter((a) => a.userId === userId)
+      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))
+      .slice(0, limit);
+  }
+
+  async getFriendsActivities(userId: string, limit: number = 50): Promise<MusicActivity[]> {
+    const friendships = await this.getUserFriendships(userId);
+    const friendIds = friendships
+      .filter((f) => f.status === "accepted")
+      .map((f) => f.userId === userId ? f.friendId : f.userId);
+
+    return Array.from(this.musicActivities.values())
+      .filter((a) => 
+        friendIds.includes(a.userId) || 
+        a.sharedWith?.includes(userId)
+      )
+      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))
+      .slice(0, limit);
+  }
+
+  async getActivity(id: string): Promise<MusicActivity | undefined> {
+    return this.musicActivities.get(id);
+  }
+
+  async createActivityReaction(insertReaction: InsertActivityReaction): Promise<ActivityReaction> {
+    const id = randomUUID();
+    const reaction: ActivityReaction = {
+      id,
+      activityId: insertReaction.activityId,
+      userId: insertReaction.userId,
+      reactionType: insertReaction.reactionType,
+      createdAt: new Date(),
+    };
+    this.activityReactions.set(id, reaction);
+    return reaction;
+  }
+
+  async getActivityReactions(activityId: string): Promise<ActivityReaction[]> {
+    return Array.from(this.activityReactions.values())
+      .filter((r) => r.activityId === activityId);
+  }
+
+  async deleteActivityReaction(id: string): Promise<void> {
+    this.activityReactions.delete(id);
+  }
+
+  async createActivityComment(insertComment: InsertActivityComment): Promise<ActivityComment> {
+    const id = randomUUID();
+    const comment: ActivityComment = {
+      id,
+      activityId: insertComment.activityId,
+      userId: insertComment.userId,
+      username: insertComment.username,
+      comment: insertComment.comment,
+      createdAt: new Date(),
+    };
+    this.activityComments.set(id, comment);
+    return comment;
+  }
+
+  async getActivityComments(activityId: string): Promise<ActivityComment[]> {
+    return Array.from(this.activityComments.values())
+      .filter((c) => c.activityId === activityId)
+      .sort((a, b) => (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0));
+  }
+
+  async deleteActivityComment(id: string): Promise<void> {
+    this.activityComments.delete(id);
   }
 }
 

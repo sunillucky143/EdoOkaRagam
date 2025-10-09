@@ -71,3 +71,74 @@ export const insertRoomQueueSchema = createInsertSchema(roomQueue).omit({
 
 export type InsertRoomQueue = z.infer<typeof insertRoomQueueSchema>;
 export type RoomQueue = typeof roomQueue.$inferSelect;
+
+export const friendships = pgTable("friendships", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  friendId: varchar("friend_id").notNull(),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFriendshipSchema = createInsertSchema(friendships).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+export type Friendship = typeof friendships.$inferSelect;
+
+export const musicActivities = pgTable("music_activities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  activityType: text("activity_type").notNull(),
+  trackId: text("track_id"),
+  trackTitle: text("track_title"),
+  trackArtist: text("track_artist"),
+  trackAlbum: text("track_album"),
+  trackAlbumCover: text("track_album_cover"),
+  message: text("message"),
+  sharedWith: text("shared_with").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMusicActivitySchema = createInsertSchema(musicActivities).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMusicActivity = z.infer<typeof insertMusicActivitySchema>;
+export type MusicActivity = typeof musicActivities.$inferSelect;
+
+export const activityReactions = pgTable("activity_reactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  activityId: varchar("activity_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  reactionType: text("reaction_type").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertActivityReactionSchema = createInsertSchema(activityReactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertActivityReaction = z.infer<typeof insertActivityReactionSchema>;
+export type ActivityReaction = typeof activityReactions.$inferSelect;
+
+export const activityComments = pgTable("activity_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  activityId: varchar("activity_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  username: text("username").notNull(),
+  comment: text("comment").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertActivityCommentSchema = createInsertSchema(activityComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertActivityComment = z.infer<typeof insertActivityCommentSchema>;
+export type ActivityComment = typeof activityComments.$inferSelect;
