@@ -52,16 +52,114 @@ export const mockAlbums = [
 ];
 
 export const mockTracks = [
-  { id: "1", title: "Starlight", artist: "Luna Eclipse", album: "Midnight Dreams", duration: "3:45", albumCover: album1 },
-  { id: "2", title: "Chasing Shadows", artist: "Luna Eclipse", album: "Midnight Dreams", duration: "4:12", albumCover: album1 },
-  { id: "3", title: "Moonlit Path", artist: "Luna Eclipse", album: "Midnight Dreams", duration: "3:28", albumCover: album1 },
-  { id: "4", title: "Electric Love", artist: "Neon Pulse", album: "Electric Hearts", duration: "3:55", albumCover: album2 },
-  { id: "5", title: "Neon Nights", artist: "Neon Pulse", album: "Electric Hearts", duration: "4:20", albumCover: album2 },
-  { id: "6", title: "Pulse of the City", artist: "Neon Pulse", album: "Electric Hearts", duration: "3:33", albumCover: album2 },
-  { id: "7", title: "Deep Blue", artist: "Azure Sound", album: "Ocean Waves", duration: "5:10", albumCover: album3 },
-  { id: "8", title: "Tidal Flow", artist: "Azure Sound", album: "Ocean Waves", duration: "4:45", albumCover: album3 },
-  { id: "9", title: "Golden Sunrise", artist: "Sunset Collective", album: "Golden Hour", duration: "3:50", albumCover: album4 },
-  { id: "10", title: "Dusk Till Dawn", artist: "Sunset Collective", album: "Golden Hour", duration: "4:05", albumCover: album4 },
+  { 
+    id: "1", 
+    title: "Acoustic Breeze", 
+    artist: "Benjamin Tissot", 
+    album: "Acoustic Collection", 
+    duration: "2:37", 
+    albumCover: album1,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-acousticbreeze.mp3"
+  },
+  { 
+    id: "2", 
+    title: "Sunny", 
+    artist: "Benjamin Tissot", 
+    album: "Upbeat Vibes", 
+    duration: "2:20", 
+    albumCover: album1,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-sunny.mp3"
+  },
+  { 
+    id: "3", 
+    title: "Tomorrow", 
+    artist: "Benjamin Tissot", 
+    album: "Cinematic Dreams", 
+    duration: "4:54", 
+    albumCover: album1,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-tomorrow.mp3"
+  },
+  { 
+    id: "4", 
+    title: "Ukulele", 
+    artist: "Benjamin Tissot", 
+    album: "Happy Tunes", 
+    duration: "2:26", 
+    albumCover: album2,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-ukulele.mp3"
+  },
+  { 
+    id: "5", 
+    title: "Energy", 
+    artist: "Benjamin Tissot", 
+    album: "Electronic Beats", 
+    duration: "2:59", 
+    albumCover: album2,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-energy.mp3"
+  },
+  { 
+    id: "6", 
+    title: "Going Higher", 
+    artist: "Benjamin Tissot", 
+    album: "Inspiring Music", 
+    duration: "4:04", 
+    albumCover: album2,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-goinghigher.mp3"
+  },
+  { 
+    id: "7", 
+    title: "Summer", 
+    artist: "Benjamin Tissot", 
+    album: "Summer Vibes", 
+    duration: "3:59", 
+    albumCover: album3,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-summer.mp3"
+  },
+  { 
+    id: "8", 
+    title: "Memories", 
+    artist: "Benjamin Tissot", 
+    album: "Emotional Journey", 
+    duration: "3:50", 
+    albumCover: album3,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-memories.mp3"
+  },
+  { 
+    id: "9", 
+    title: "Creative Minds", 
+    artist: "Benjamin Tissot", 
+    album: "Innovation", 
+    duration: "2:26", 
+    albumCover: album4,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-creativeminds.mp3"
+  },
+  { 
+    id: "10", 
+    title: "Tenderness", 
+    artist: "Benjamin Tissot", 
+    album: "Piano Collection", 
+    duration: "2:03", 
+    albumCover: album4,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-tenderness.mp3"
+  },
+  { 
+    id: "11", 
+    title: "Happy Rock", 
+    artist: "Benjamin Tissot", 
+    album: "Rock Anthems", 
+    duration: "1:45", 
+    albumCover: album5,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-happyrock.mp3"
+  },
+  { 
+    id: "12", 
+    title: "Dubstep", 
+    artist: "Benjamin Tissot", 
+    album: "Electronic Energy", 
+    duration: "2:03", 
+    albumCover: album5,
+    audioUrl: "https://www.bensound.com/bensound-music/bensound-dubstep.mp3"
+  },
 ];
 
 export const mockPlaylists = [

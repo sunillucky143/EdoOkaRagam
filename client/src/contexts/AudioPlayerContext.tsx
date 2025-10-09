@@ -8,6 +8,7 @@ interface Track {
   duration: string;
   albumCover: string;
   startTime?: number;
+  audioUrl?: string;
 }
 
 interface AudioPlayerContextType {
@@ -121,16 +122,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setCurrentIndex(0);
     setProgress(0);
     
-    if (audioRef.current && startTime !== undefined) {
-      const seekToStartTime = () => {
-        if (audioRef.current) {
-          audioRef.current.currentTime = startTime;
-        }
-      };
+    const trackAudioUrl = track.audioUrl;
+    if (audioRef.current && trackAudioUrl) {
+      audioRef.current.src = trackAudioUrl;
+      audioRef.current.load();
       
-      if (audioRef.current.readyState >= 1) {
-        seekToStartTime();
-      } else {
+      if (startTime !== undefined) {
+        const seekToStartTime = () => {
+          if (audioRef.current) {
+            audioRef.current.currentTime = startTime;
+          }
+        };
+        
         audioRef.current.addEventListener('loadedmetadata', seekToStartTime, { once: true });
       }
     }
@@ -145,6 +148,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setCurrentIndex(startIndex);
     setCurrentTrack(tracks[startIndex]);
     setProgress(0);
+    
+    const startTrackAudioUrl = tracks[startIndex].audioUrl;
+    if (audioRef.current && startTrackAudioUrl) {
+      audioRef.current.src = startTrackAudioUrl;
+      audioRef.current.load();
+    }
+    
     setIsPlaying(true);
   }, []);
 
@@ -165,6 +175,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setCurrentIndex(nextIndex);
     setCurrentTrack(queue[nextIndex]);
     setProgress(0);
+    
+    const nextTrackAudioUrl = queue[nextIndex].audioUrl;
+    if (audioRef.current && nextTrackAudioUrl) {
+      audioRef.current.src = nextTrackAudioUrl;
+      audioRef.current.load();
+    }
+    
     setIsPlaying(true);
   }, [queue, currentIndex, shuffle]);
 
@@ -183,6 +200,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setCurrentIndex(prevIndex);
     setCurrentTrack(queue[prevIndex]);
     setProgress(0);
+    
+    const prevTrackAudioUrl = queue[prevIndex].audioUrl;
+    if (audioRef.current && prevTrackAudioUrl) {
+      audioRef.current.src = prevTrackAudioUrl;
+      audioRef.current.load();
+    }
+    
     setIsPlaying(true);
   }, [queue, currentIndex, progress]);
 
