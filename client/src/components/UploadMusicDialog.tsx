@@ -11,7 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Upload } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
+import { audioService } from "@/lib/audioService";
 
 interface UploadMusicDialogProps {
   trigger?: React.ReactNode;
@@ -20,9 +21,10 @@ interface UploadMusicDialogProps {
 export function UploadMusicDialog({ trigger }: UploadMusicDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isConverting, setIsConverting] = useState(false);
   const { toast } = useToast();
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!selectedFile) {
       toast({
         title: "Error",
@@ -32,20 +34,34 @@ export function UploadMusicDialog({ trigger }: UploadMusicDialogProps) {
       return;
     }
 
+    setIsConverting(true);
+
     toast({
       title: "Upload started!",
-      description: `Uploading "${selectedFile.name}"...`,
+      description: `Converting "${selectedFile.name}" to HD quality...`,
     });
 
-    setTimeout(() => {
+    try {
+      const result = await audioService.convertUploadedFile(selectedFile);
+      
       toast({
-        title: "Upload complete!",
-        description: `"${selectedFile.name}" has been added to your library`,
+        title: "HD Conversion Complete!",
+        description: `"${selectedFile.name}" has been converted to HD quality and added to your library`,
       });
-    }, 2000);
 
-    setSelectedFile(null);
-    setOpen(false);
+      console.log('HD conversion result:', result);
+    } catch (error) {
+      console.error('HD conversion failed:', error);
+      toast({
+        title: "Conversion Failed",
+        description: "Failed to convert audio to HD quality. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConverting(false);
+      setSelectedFile(null);
+      setOpen(false);
+    }
   };
 
   return (
@@ -94,9 +110,13 @@ export function UploadMusicDialog({ trigger }: UploadMusicDialogProps) {
             >
               Cancel
             </Button>
-            <Button onClick={handleUpload} data-testid="button-confirm-upload">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
+            <Button onClick={handleUpload} disabled={isConverting} data-testid="button-confirm-upload">
+              {isConverting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4 mr-2" />
+              )}
+              {isConverting ? "Converting to HD..." : "Upload & Convert to HD"}
             </Button>
           </div>
         </div>

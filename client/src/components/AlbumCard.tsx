@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { mockTracks } from "@/lib/mockData";
+import React, { createContext, useContext, useRef, useState } from "react";
 
 interface AlbumCardProps {
   id: string;
@@ -20,9 +21,11 @@ export function AlbumCard({ id, title, artist, cover, tracks, onPlay }: AlbumCar
     e.stopPropagation();
     if (onPlay) {
       onPlay();
+      console.log(id, " hi");
     } else {
       const albumTracks = mockTracks.slice(0, 5);
-      playQueue(albumTracks, 0);
+      playQueue(albumTracks, Number (id));
+      // console.log(id)
     }
   };
 

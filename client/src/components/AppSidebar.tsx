@@ -58,7 +58,7 @@ export function AppSidebar() {
             <Music className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="font-display text-xl font-bold bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent">
-            Streamify
+            Edo Oka Ragam
           </span>
         </div>
       </SidebarHeader>

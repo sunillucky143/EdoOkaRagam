@@ -1,7 +1,7 @@
 import { Play, Shuffle, Heart, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TrackRow } from "@/components/TrackRow";
-import { mockTracks, mockAlbums } from "@/lib/mockData";
+import { availableTracks, availableAlbums } from "@/lib/mockData";
 import { useState } from "react";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
 import { useToast } from "@/hooks/use-toast";
@@ -13,18 +13,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function Playlist() {
+function Playlist() {
   const [liked, setLiked] = useState(false);
-  const playlist = mockAlbums[0];
+  const playlist = availableAlbums[0] || { id: "1", title: "Sample Playlist", artist: "Various Artists", cover: "", tracks: 0 };
   const { playQueue } = useAudioPlayer();
   const { toast } = useToast();
 
   const handlePlay = () => {
-    playQueue(mockTracks, 0);
+    playQueue(availableTracks, 0);
   };
 
   const handleShuffle = () => {
-    const shuffled = [...mockTracks].sort(() => Math.random() - 0.5);
+    const shuffled = [...availableTracks].sort(() => Math.random() - 0.5);
     playQueue(shuffled, 0);
   };
 
@@ -150,12 +150,13 @@ export default function Playlist() {
         </div>
 
         <div className="space-y-1">
-          {mockTracks.map((track, index) => (
+          {availableTracks.map((track, index) => (
             <TrackRow
               key={track.id}
               {...track}
               number={index + 1}
               isPlaying={index === 0}
+              audioUrl={track.audioUrl}
             />
           ))}
         </div>
@@ -163,3 +164,5 @@ export default function Playlist() {
     </div>
   );
 }
+
+export default Playlist;

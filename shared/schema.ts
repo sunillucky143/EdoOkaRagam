@@ -61,6 +61,9 @@ export const roomQueue = pgTable("room_queue", {
   trackAlbum: text("track_album").notNull(),
   trackDuration: text("track_duration").notNull(),
   trackAlbumCover: text("track_album_cover").notNull(),
+  trackAudioUrl: text("track_audio_url"),
+  trackHDAudioUrl: text("track_hd_audio_url"),
+  isHD: boolean("is_hd").default(false),
   position: integer("position").notNull(),
   addedBy: varchar("added_by").notNull(),
 });
@@ -213,3 +216,72 @@ export const insertVibeShareRequestSchema = createInsertSchema(vibeShareRequests
 
 export type InsertVibeShareRequest = z.infer<typeof insertVibeShareRequestSchema>;
 export type VibeShareRequest = typeof vibeShareRequests.$inferSelect;
+
+export const hdAudioConversions = pgTable("hd_audio_conversions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  originalUrl: text("original_url").notNull(),
+  hdUrl: text("hd_url").notNull(),
+  originalBitrate: integer("original_bitrate").notNull(),
+  originalSampleRate: integer("original_sample_rate").notNull(),
+  originalChannels: integer("original_channels").notNull(),
+  originalFormat: text("original_format").notNull(),
+  originalSize: integer("original_size").notNull(),
+  hdBitrate: integer("hd_bitrate").notNull(),
+  hdSampleRate: integer("hd_sample_rate").notNull(),
+  hdChannels: integer("hd_channels").notNull(),
+  hdFormat: text("hd_format").notNull(),
+  hdSize: integer("hd_size").notNull(),
+  conversionTime: integer("conversion_time").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertHDAudioConversionSchema = createInsertSchema(hdAudioConversions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertHDAudioConversion = z.infer<typeof insertHDAudioConversionSchema>;
+export type HDAudioConversion = typeof hdAudioConversions.$inferSelect;
+
+export const tracks = pgTable("tracks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  artist: text("artist").notNull(),
+  album: text("album").notNull(),
+  duration: text("duration").notNull(),
+  albumCover: text("album_cover").notNull(),
+  audioUrl: text("audio_url").notNull(),
+  hdAudioUrl: text("hd_audio_url"),
+  isHD: boolean("is_hd").default(false),
+  uploadedBy: varchar("uploaded_by").notNull(),
+  fileSize: integer("file_size").notNull(),
+  format: text("format").notNull(),
+  bitrate: integer("bitrate"),
+  sampleRate: integer("sample_rate"),
+  channels: integer("channels"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertTrackSchema = createInsertSchema(tracks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTrack = z.infer<typeof insertTrackSchema>;
+export type Track = typeof tracks.$inferSelect;
+
+// Track likes
+export const trackLikes = pgTable("track_likes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  trackId: varchar("track_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertTrackLikeSchema = createInsertSchema(trackLikes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTrackLike = z.infer<typeof insertTrackLikeSchema>;
+export type TrackLike = typeof trackLikes.$inferSelect;

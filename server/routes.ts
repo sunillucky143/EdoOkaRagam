@@ -1,7 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import { storage } from "./storage";
+import { storage } from "./storageFactory";
+import { audioRoutes } from "./audioRoutes.js";
+import { streamingRoutes } from "./streamingRoutes.js";
 import type { ListeningRoom, RoomParticipant, User } from "@shared/schema";
 import { 
   insertFriendshipSchema, 
@@ -25,6 +27,11 @@ interface RoomConnection {
 const roomConnections = new Map<string, RoomConnection[]>();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add audio routes
+  app.use('/api/audio', audioRoutes);
+  
+  // Add streaming routes
+  app.use('/api/stream', streamingRoutes);
   app.post("/api/rooms", async (req, res) => {
     try {
       const { name, hostId } = req.body;
@@ -96,6 +103,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to update permissions" });
+    }
+  });
+
+  // Remove a queue item via REST and broadcast
+  app.delete("/api/rooms/:roomId/queue/:queueId", async (req, res) => {
+    try {
+      const { roomId, queueId } = req.params;
+      await storage.removeFromQueue(queueId);
+      const queue = await storage.getRoomQueue(roomId);
+      broadcastToRoom(roomId, { type: "queue_updated", queue });
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove from queue" });
+    }
+  });
+
+  // Utility endpoint to create a test user (for demo/testing controls)
+  app.post("/api/test-users", async (req, res) => {
+    try {
+      const { username } = req.body;
+      const user = await storage.createUser({ username: username || `Test-${Date.now()}`, password: "test" });
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create test user" });
     }
   });
 
@@ -288,6 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/vibes/friends/:userId", async (req, res) => {
     try {
       const vibes = await storage.getFriendsVibes(req.params.userId);
+      res.setHeader('Cache-Control', 'no-store');
       const enrichedVibes = await Promise.all(
         vibes.map(async (v) => {
           const user = await storage.getUser(v.userId);
@@ -336,6 +368,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(request);
     } catch (error) {
       res.status(500).json({ error: "Failed to create share request" });
+    }
+  });
+
+  // Likes endpoints
+  app.get("/api/likes/:userId", async (req, res) => {
+    try {
+      const tracks = await storage.getLikedTracks(req.params.userId);
+      res.json({ tracks });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch liked tracks" });
+    }
+  });
+
+  app.get("/api/likes/:userId/:trackId", async (req, res) => {
+    try {
+      const liked = await storage.isTrackLiked(req.params.userId, req.params.trackId);
+      res.json({ liked });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch like state" });
+    }
+  });
+
+  app.post("/api/likes", async (req, res) => {
+    try {
+      const { userId, trackId } = req.body;
+      if (!userId || !trackId) return res.status(400).json({ error: "userId and trackId are required" });
+      const like = await storage.likeTrack({ userId, trackId });
+      res.json(like);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to like track" });
+    }
+  });
+
+  app.delete("/api/likes", async (req, res) => {
+    try {
+      const { userId, trackId } = req.body;
+      if (!userId || !trackId) return res.status(400).json({ error: "userId and trackId are required" });
+      await storage.unlikeTrack(userId, trackId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to unlike track" });
+    }
+  });
+
+  app.delete("/api/vibes/:vibeId", async (req, res) => {
+    try {
+      const vibeId = req.params.vibeId;
+      // Check if vibe exists
+      const vibe = await storage.getVibe(vibeId);
+      if (!vibe) {
+        return res.status(404).json({ error: "Vibe not found" });
+      }
+      
+      // Delete the vibe
+      await storage.deleteVibe(vibeId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete vibe" });
     }
   });
 
@@ -444,6 +534,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 type: "queue_updated",
                 queue,
               });
+            }
+            break;
+          }
+
+          case "remove_from_queue": {
+            if (currentConnection) {
+              if (message.queueId) {
+                await storage.removeFromQueue(message.queueId);
+                const queue = await storage.getRoomQueue(currentConnection.roomId);
+                broadcastToRoom(currentConnection.roomId, {
+                  type: "queue_updated",
+                  queue,
+                });
+              }
             }
             break;
           }

@@ -7,10 +7,14 @@ import {
   Repeat,
   Volume2,
   ListMusic,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { HDBadge } from "@/components/ui/hd-badge";
+import { StreamingIndicator } from "@/components/ui/streaming-indicator";
 import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface AudioPlayerProps {
   onQueueClick?: () => void;
@@ -24,6 +28,8 @@ export function AudioPlayer({ onQueueClick }: AudioPlayerProps) {
     volume,
     shuffle,
     repeat,
+    isBuffering,
+    isStreaming,
     togglePlayPause,
     nextTrack,
     previousTrack,
@@ -32,6 +38,8 @@ export function AudioPlayer({ onQueueClick }: AudioPlayerProps) {
     toggleShuffle,
     toggleRepeat,
   } = useAudioPlayer();
+  
+  const { isMobile, state } = useSidebar();
 
   if (!currentTrack) return null;
 
@@ -42,8 +50,19 @@ export function AudioPlayer({ onQueueClick }: AudioPlayerProps) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  // Calculate the left offset based on sidebar state
+  const getLeftOffset = () => {
+    if (isMobile) {
+      return "left-0"; // On mobile, sidebar is overlay, so audio player covers full width
+    } else if (state === "expanded") {
+      return "left-[var(--sidebar-width)]"; // On desktop with expanded sidebar, offset by sidebar width
+    } else {
+      return "left-[var(--sidebar-width-icon)]"; // On desktop with collapsed sidebar, offset by icon width
+    }
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-card-border z-50">
+    <div className={`fixed bottom-0 right-0 bg-card border-t border-card-border z-50 ${getLeftOffset()}`}>
       {/* Mobile Layout */}
       <div className="md:hidden">
         <div className="px-3 pt-2 pb-1">
@@ -115,11 +134,13 @@ export function AudioPlayer({ onQueueClick }: AudioPlayerProps) {
               className="h-14 w-14 rounded-md"
             />
             <div className="min-w-0 flex-1">
-              <div className="font-medium text-sm truncate" data-testid="text-player-title">
+              <div className="font-medium text-sm truncate flex items-center gap-2" data-testid="text-player-title">
                 {currentTrack.title}
+                <HDBadge isHD={currentTrack.isHD} />
               </div>
-              <div className="text-xs text-muted-foreground truncate">
+              <div className="text-xs text-muted-foreground truncate flex items-center gap-2">
                 {currentTrack.artist}
+                <StreamingIndicator isStreaming={isStreaming} isBuffering={isBuffering} />
               </div>
             </div>
           </div>
@@ -150,9 +171,12 @@ export function AudioPlayer({ onQueueClick }: AudioPlayerProps) {
                 size="icon"
                 className="h-10 w-10 rounded-full bg-primary hover:bg-primary"
                 onClick={togglePlayPause}
+                disabled={isBuffering}
                 data-testid="button-play-pause"
               >
-                {isPlaying ? (
+                {isBuffering ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : isPlaying ? (
                   <Pause className="h-5 w-5 fill-current" />
                 ) : (
                   <Play className="h-5 w-5 fill-current ml-0.5" />

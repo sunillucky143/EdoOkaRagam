@@ -13,7 +13,9 @@ import Home from "@/pages/Home";
 import SearchPage from "@/pages/SearchPage";
 import Library from "@/pages/Library";
 import Playlist from "@/pages/Playlist";
+import LikedSongs from "@/pages/LikedSongs";
 import ListeningRoom from "@/pages/ListeningRoom";
+import RoomAddSongs from "@/pages/RoomAddSongs";
 import Friends from "@/pages/Friends";
 import Feed from "@/pages/Feed";
 import Vibes from "@/pages/Vibes";
@@ -26,8 +28,9 @@ function Router() {
       <Route path="/search" component={SearchPage} />
       <Route path="/library" component={Library} />
       <Route path="/playlist/:id" component={Playlist} />
-      <Route path="/liked" component={Playlist} />
+      <Route path="/liked" component={LikedSongs} />
       <Route path="/room/:roomId" component={ListeningRoom} />
+      <Route path="/room/:roomId/add" component={RoomAddSongs} />
       <Route path="/friends" component={Friends} />
       <Route path="/feed" component={Feed} />
       <Route path="/vibes" component={Vibes} />

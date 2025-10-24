@@ -2,7 +2,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { AlbumCard } from "@/components/AlbumCard";
 import { TrackRow } from "@/components/TrackRow";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockAlbums, mockTracks, mockArtists } from "@/lib/mockData";
+import { availableAlbums, availableTracks, availableArtists } from "@/lib/mockData";
 import { useState } from "react";
 
 export default function SearchPage() {
@@ -33,15 +33,15 @@ export default function SearchPage() {
               <section>
                 <h2 className="font-display text-xl font-semibold mb-4">Top Result</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <AlbumCard {...mockAlbums[0]} />
+                  {availableAlbums.length > 0 && <AlbumCard {...availableAlbums[0]} />}
                 </div>
               </section>
 
               <section>
                 <h2 className="font-display text-xl font-semibold mb-4">Tracks</h2>
                 <div className="space-y-1">
-                  {mockTracks.slice(0, 4).map((track, index) => (
-                    <TrackRow key={track.id} {...track} number={index + 1} />
+                  {availableTracks.slice(0, 4).map((track, index) => (
+                    <TrackRow key={track.id} {...track} number={index + 1} audioUrl={track.audioUrl} />
                   ))}
                 </div>
               </section>
@@ -49,23 +49,33 @@ export default function SearchPage() {
 
             <TabsContent value="tracks">
               <div className="space-y-1">
-                {mockTracks.map((track, index) => (
-                  <TrackRow key={track.id} {...track} number={index + 1} />
+                {availableTracks.map((track, index) => (
+                  <TrackRow key={track.id} {...track} number={index + 1} audioUrl={track.audioUrl} />
                 ))}
               </div>
+              {availableTracks.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  No tracks available. Upload some music to get started!
+                </p>
+              )}
             </TabsContent>
 
             <TabsContent value="albums">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {mockAlbums.map((album) => (
+                {availableAlbums.map((album) => (
                   <AlbumCard key={album.id} {...album} />
                 ))}
               </div>
+              {availableAlbums.length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  No albums available. Upload some music to get started!
+                </p>
+              )}
             </TabsContent>
 
             <TabsContent value="artists">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {mockArtists.map((artist) => (
+                {availableArtists.map((artist) => (
                   <div
                     key={artist.id}
                     className="flex flex-col items-center gap-4 p-6 rounded-lg hover-elevate cursor-pointer"
